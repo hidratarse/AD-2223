@@ -1,28 +1,27 @@
 create or replace type direccion as object (
-calle varchar(25),
-ciudad varchar(20),
-codigo_post number(5)); 
+	calle varchar(25),
+	ciudad varchar(20),
+	codigo_post number(5)); 
 /
 
 create or replace type persona as object(
-codigo number, 
-nombre varchar2(35), 
-direc direccion, 
-fecha_nac date); 
+	codigo number, 
+	nombre varchar2(35), 
+	direc direccion, 
+	fecha_nac date); 
 /
 
 DECLARE 
-dir direccion:= direccion(NULL, NULL, NULL); 
-p persona := persona (NULL, NULL, NULL, NULL);
-
+	dir direccion:= direccion(NULL, NULL, NULL); 
+	p persona := persona (NULL, NULL, NULL, NULL);
 BEGIN
-dir.calle:= 'La Mina,3'; 
-dir.ciudad:='GUADALAJARA'; 
-dir.codigo_post:=19001; 
-p.codigo:=1; 
-p.nombre:='JUAN'; 
-p.direc:=dir; 
-p.fecha_nac:='10/11/1988'; 
+	dir.calle:= 'La Mina,3'; 
+	dir.ciudad:='GUADALAJARA'; 
+	dir.codigo_post:=19001; 
+	p.codigo:=1; 
+	p.nombre:='JUAN'; 
+	p.direc:=dir; 
+	p.fecha_nac:='10/11/1988'; 
 end; 
 /
 
@@ -33,10 +32,9 @@ insert into alumnos values(2, 'JULIA BRENA', direccion ('C/LOS ESPARTALES,25', '
 
 insert into alumnos values(p);
 
-SELECT * from alumnos a where a.direc.direccion='GUADALAJARA'; 
-SELECT codigo, a.direc from alumnos a;
+SELECT * from alumnos a where a.direc.ciudad='GUADALAJARA'; 
+SELECT a.codigo, a.direc from alumnos a;
 update alumnos a set a.direc.ciudad=lower(a.direc.ciudad) where a.direc.ciudad = 'GUADALAJARA';
-
 
 DECLARE
 	cursor c1 is select * from alumnos;
@@ -48,6 +46,3 @@ END;
 /
 
 DELETE ALUMNOS A WHERE A.DIREC.CIUDAD='GUADALAJARA';
- 
- 
-rollback; 
