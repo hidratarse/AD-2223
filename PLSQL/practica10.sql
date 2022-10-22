@@ -1,82 +1,114 @@
-DROP TYPE TIPO_CUSTOMER;
-DROP TYPE TIPO_PERSON;
-CREATE OR REPLACE TYPE TIPO_ADDRESS AS OBJECT(
-    DIR VARCHAR(100),
-    CP NUMBER(5));
-/
-CREATE OR REPLACE TYPE TIPO_CONTACTO AS OBJECT(
-    TELEFONO NUMBER,
-    EMAIL VARCHAR(100));
-/
-CREATE OR REPLACE TYPE TIPO_PERSON AS OBJECT(
-    ID VARCHAR(20),
-    NOMBRE VARCHAR(30),
-    APELLIDO VARCHAR (30),
-    DIRECCION TIPO_ADDRESS,
-    CONTACTO TIPO_CONTACTO)
-    NOT FINAL
-/
-CREATE TYPE TIPO_CUSTOMER UNDER TIPO_PERSON(N_PEDIDOS NUMBER)
-/
-DESC TIPO_ADDRESS;
-DESC TIPO_CONTACTO;
-DESC TIPO_PERSON;
-CREATE OR REPLACE TYPE TIPO_ARTICULO AS OBJECT(
-    IDART NUMBER,
-    NOMBRE VARCHAR(100),
-    PRECIO NUMBER,
-    PORCT_IVA NUMBER);
-/
-CREATE TYPE TABLA_ARTICULOS AS TABLE OF TIPO_ARTICULO;
-/
-CREATE OR REPLACE TYPE TIPO_LISTA_DETALLE AS OBJECT(
-    NUMERO NUMBER,
-    ARTICULO TIPO_ARTICULO,
-    CANTIDAD NUMBER)
-/
-CREATE TYPE TAB_LISTA AS TABLE OF TIPO_LISTA_DETALLE;
-/
-DROP TYPE TIPO_LISTA_COMPRA;
-CREATE TYPE TIPO_LISTA_COMPRA AS OBJECT(
-    ID NUMBER,
-    FECHA DATE,
-    CLI REF TIPO_CUSTOMER,
-    DETALLE TABLA_LISTA,
-    MEMBER FUNCTION TOTAL RETURN NUMBER)
-/
-CREATE TYPE BODY TIPO_LISTA_COMPRA 
-AS
-    MEMBER FUNCTION TOTAL RETURN NUMBER IS
-        I INTEGER;
-        TOT NUMBER:=0;
-    BEGIN
-        FOR I IN 1..DETALLE.COUNT LOOP  
-            TOT:=TOT+(DETALLE(I).CANTIDAD*
-            DETALLE(I).ARTICULO.PRECIO)*
-            (1+(DETALLE(I).ARTICULO.PORCT_IVA/100));
-        END LOOP;
-        RETURN TOT;
-        END;
-    END;
-    /
-SHOW ERRORS;
-CREATE TABLE CUSTOMERS OF TIPO_CUSTOMER;
+drop type tipo_customer;
+drop type tipo_person;
 
-INSERT INTO CUSTOMERS VALUES(1,'PEDRO','SUAREZ',
-TIPO_ADDRESS('PASEO DEL MUSEO, 15', 28009),
-TIPO_CONTACTO('92938923','PSUAREZ@ONO.ES'),0);
+create or replace type tipo_address as object(
+dir varchar(100),
+cp number(5));
+/
+create or replace type tipo_contacto as object (
+  telefono number,
+  email varchar(100));
+ /
+  create type tipo_person as object
+  (id varchar(20),
+  nombre varchar(30),
+  apellido varchar(30),
+  direccion tipo_address,
+  contacto tipo_contacto) 
+  not final
+ /
+ 
+ create type tipo_customer under tipo_person
+ (n_pedidos number)
+ /
 
-INSERT INTO CUSTOMERS VALUES(2,'JUANA','GOMEZ',
-TIPO_ADDRESS('GRAN VIA, 15', 28089),
-TIPO_CONTACTO('92932324','JUANA@ONO.ES'),0);
+desc tipo_address;
+  
+create or replace type tipo_articulo as object
+( idart number,
+nombre varchar(30),
+descripcion varchar(100),
+precio number,
+porct_iva number)
+/
+  
+  create type tabla_articulos as table of tipo_articulo;
+  /
+ create or replace type tipo_lista_detalle as object(
+ numero number,
+ articulo tipo_articulo,
+ cantidad number)
+ /
+ 
+ create type tab_lista_detalle as table of tipo_lista_detalle;
+ /
+ create type tipo_lista_compra as object(
+ id number,
+ fecha date,
+ cli REF tipo_customer,
+ detalle tab_lista_detalle,
+ member function total return number)
+ /
+ create type body tipo_lista_compra as 
+   member function total return number is
+     i integer;
+      tot number:=0;
+      begin
+        for i in 1..Detalle.count loop
+          tot:=tot + (Detalle(i).cantidad * 
+          Detalle(i).articulo.precio)* 
+          (1+(Detalle(i).articulo.porct_iva/100));
+        end loop;
+        return tot;
+        end;
+      end;
+      /
+   create table customers of tipo_customer;
+   
+   insert into customers values(
+    1, 'Pedro', 'Suarez', tipo_address(
+        'Paseo del museo, 15', 28009), 
+        tipo_contacto(
+            938383838, 'psuarez@ono.es'), 0);
+   
+   insert into customers values(
+        2, 'Juana', 'Gomez', 
+        tipo_address('Gran Via, 15', 28005), 
+        tipo_contacto(98888888, 'jgomez@ono.es'), 
+        0);
+   
+ create table listas_de_compras of tipo_lista_compra
+    nested table Detalle store as tDetalle;
+             
+ insert into listas_de_compras 
+ select 1, current_date, ref(c), tab_lista_detalle(
+    tipo_lista_detalle(
+        1, tipo_articulo(1, ' barra de pan', 'tipo baguette', 1,7),4
+    ),
+    tipo_lista_detalle(
+        2, 
+        tipo_articulo(2, ' lonchas de jamon', 'tipo iberico', 6,7),
+        4)
+  )from customers c where c.id=1;
+ 
+insert into listas_de_compras values (
+    3, 
+    sysdate, 
+    (select ref(c) from customers c where c.id=1),
+    tab_lista_detalle(
+        tipo_lista_detalle(
+            1, 
+            tipo_articulo(1, ' barra de pan', 'tipo baguette', 1,7),
+            4),  
+        tipo_lista_detalle(
+            2, 
+            tipo_articulo(2, ' lonchas de jamon', 'tipo iberico', 6,7),
+            4)
+    )
+);
+ 
+select * from listas_de_compras;      
+          
+select id, fecha, deref(cli), detalle from listas_de_compras;
 
-CREATE TABLE LISTAS_DE_COMPRAS OF TIPO_LISTA_COMPRA
-    NESTED TABLE DETALLE STORE AS tDETALLE;
-
-/*INSERT INTO LISTAS_DE_COMPRAS SELECT 1, CURRENT_DATE, REF(C),TAB_LISTA() FALTA CORREGIR* INSERT CON SELECT*/
-
-INSERT INTO LISTAS_DE_COMPRAS VALUES(
-    3, SYSDATE,
-    (SELECT REF(C) FROM CUSTOMERS C WHERE C.ID=1),
-    TAB_LISTA_DETALLE(TIPO_LISTA_DETALLE(1,'BARRA DE PAN','TIPO BAGUETTE',1,7))
-)
+select id, c.total() from listas_de_compras c;
