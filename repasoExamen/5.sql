@@ -1,0 +1,31 @@
+CREATE OR REPLACE TYPE EMPLEADO AS OBJECT(
+    Rut varchar(10),
+    Nombre varchar(10),
+    Cargo varchar(9),
+    fechaIng date,
+    sueldo number(9),
+    somision number (9),
+    anticipo number (9),
+    MEMBER FUNCTION SUELDO_LIQUIDO RETURN NUMBER,
+    MEMBER PROCEDURE AUMENTO_SUELDO(V_AUMENTO NUMBER)
+);
+/
+
+CREATE OR REPLACE TYPE BODY EMPLEADO
+IS
+    MEMBER FUNCTION SUELDO_LIQUIDO RETURN NUMBER
+    IS
+    BEGIN
+        RETURN(SUELDO-SOMISION)-anticipo;
+    END;
+
+    MEMBER PROCEDURE AUMENTO_SUELDO(V_AUMENTO NUMBER)
+    IS
+    BEGIN
+        SUELDO:=SUELDO+V_AUMENTO;
+    END;
+END;
+/
+
+
+
