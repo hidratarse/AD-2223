@@ -1,0 +1,128 @@
+CREATE TYPE COLEC_HIJOS AS
+    VARRAY(
+        10
+    ) OF VARCHAR2(
+        30
+    );
+/
+
+CREATE TABLE EMPS(
+    ID NUMBER,
+    NOMBRE VARCHAR2(30),
+    APELLIDOS VARCHAR(30),
+    HIJOS COLEC_HIJOS
+);
+
+INSERT INTO EMPS VALUES(
+    1,
+    'CARNE',
+    'BLOODHOOF',
+    COLEC_HIJOS('BAINE', 'HAINE')
+);
+
+SELECT
+    *
+FROM
+    EMPS;
+
+SELECT
+    E.HIJOS
+FROM
+    EMPS E
+WHERE
+    ID=1;
+
+SELECT
+    E.HIJOS
+FROM
+    EMPS E;
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    VCOLEC COLEC_HIJOS;
+BEGIN
+    SELECT
+        E.HIJOS INTO VCOLEC
+    FROM
+        EMPS E
+    WHERE
+        ID=1;
+    DBMS_OUTPUT.PUT_LINE(VCOLEC.COUNT);
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR C1 IS
+        SELECT
+            NOMBRE,
+            HIJOS
+        FROM
+            EMPS;
+    VEMP   VARCHAR2(30);
+    VHIJOS COLEC_HIJOS;
+BEGIN
+    OPEN C1;
+    FETCH C1 INTO VEMP, VHIJOS;
+    WHILE C1%FOUND LOOP
+        DBMS_OUTPUT.PUT_LINE('EMPLEADO '
+            ||VEMP
+            ||' TIENE'
+            || VHIJOS.COUNT
+            ||'HIJOS');
+        FOR I IN VHIJOS.FIRST.. VHIJOS.LAST LOOP
+            DBMS_OUTPUT.PUT_LINE('HIJOS '
+                ||VHIJOS(I));
+        END LOOP;
+        FETCH C1 INTO VEMP, VHIJOS;
+    END LOOP;
+    CLOSE C1;
+END;
+/
+
+DECLARE
+    CURSOR C1 IS
+        SELECT
+            NOMBRE,
+            HIJOS
+        FROM
+            EMPS;
+    VEMP   VARCHAR2(30);
+    VHIJOS COLEC_HIJOS;
+BEGIN
+    SELECT
+        HIJOS INTO VHIJOS
+    FROM
+        EMPS
+    WHERE
+        ID=1;
+    VHIJOS.EXTEND;
+    VHIJOS(VHIJOS.LAST):='GARROSH';
+    VHIJOS.EXTEND(3, 1);
+
+    OPEN C1;
+    FETCH C1 INTO VEMP, VHIJOS;
+    WHILE C1%FOUND LOOP
+        DBMS_OUTPUT.PUT_LINE('EMPLEADO '
+            ||VEMP
+            ||' TIENE'
+            || VHIJOS.COUNT
+            ||'HIJOS');
+        FOR I IN VHIJOS.FIRST.. VHIJOS.LAST LOOP
+            DBMS_OUTPUT.PUT_LINE('HIJOS '
+                ||VHIJOS(I));
+        END LOOP;
+        FETCH C1 INTO VEMP, VHIJOS;
+    END LOOP;
+    CLOSE C1;
+END;
+/
+
+SELECT
+    HIJOS
+FROM
+    EMPS
+WHERE
+    ID=1;
