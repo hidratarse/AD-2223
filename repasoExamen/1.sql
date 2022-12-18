@@ -1,0 +1,21 @@
+CREATE OR REPLACE TYPE TIP_DIRECCION2 AS OBJECT(
+    calle varchar(25),
+    ciudad varchar(20),
+    cOdigo_post number(5)
+);
+/
+
+CREATE OR REPLACE TYPE TIP_PERSONA2 AS OBJECT(
+    CODIGO NUMBER,
+    nombre varchar(35), 
+    direc TIP_DIRECCION2,
+    fecha_nac date
+);
+/
+
+DROP TABLE TAB_PERSO;
+CREATE TABLE TAB_PERSO OF TIP_PERSONA2;
+
+INSERT INTO TAB_PERSO VALUES(1, 'POST MALONE', 
+    TIP_DIRECCION2('GUAREÑA','MADRID',28044),
+    TO_DATE('18/12/1891','dd/mm/yyyy'));
