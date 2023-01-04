@@ -8,4 +8,4 @@ CREATE TABLE POKEMON (
     ALTURA FLOAT,
     PESO FLOAT,
     CONSTRAINT PRIMARY KEY (ENTRADA)
-) COMMENT = 'Aqu� se guardar� informaci�n de distintos pokemones'
+) COMMENT = 'Aquí se guardará información de distintos pokemones.'
