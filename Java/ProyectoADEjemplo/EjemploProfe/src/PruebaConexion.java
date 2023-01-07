@@ -145,8 +145,7 @@ public class PruebaConexion {
             System.out.print(e.getMessage());
         } catch (java.sql.SQLException e) {
             System.out.print(e.getMessage());
-        } finally // pase lo que pase cerramos la conexi n
-        {
+        } finally { // pase lo que pase cerramos la conexión
             try {
                 BD.cerrarConexion();
             } catch (java.sql.SQLException ignorada) {
